@@ -1,0 +1,42 @@
+/* Main App */
+.stApp {
+    max-width: 1200px;
+    margin: auto;
+}
+
+/* Buttons */
+.stButton > button {
+    width: 100%;
+    border-radius: 10px;
+    height: 45px;
+    font-size: 16px;
+    font-weight: 600;
+    border: none;
+}
+
+/* Text Input */
+.stTextInput input {
+    border-radius: 10px;
+}
+
+/* File Uploader */
+.stFileUploader {
+    border: 2px dashed #4F8BF9;
+    border-radius: 12px;
+    padding: 10px;
+}
+
+/* Success Messages */
+.stSuccess {
+    border-radius: 10px;
+}
+
+/* Sidebar */
+section[data-testid="stSidebar"] {
+    border-right: 1px solid #334155;
+}
+
+/* Headings */
+h1, h2, h3 {
+    font-weight: 700;
+}
