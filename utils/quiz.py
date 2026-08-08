@@ -3,40 +3,53 @@ import json
 from pathlib import Path
 
 from dotenv import load_dotenv
-import google.generativeai as genai
+from langchain_google_genai import ChatGoogleGenerativeAI
 
 
+# ---------------------------------------------------------
 # Load .env
+# ---------------------------------------------------------
+
 env_path = Path(__file__).resolve().parent.parent / ".env"
 load_dotenv(dotenv_path=env_path)
 
 
+# ---------------------------------------------------------
+# Get API key
+# ---------------------------------------------------------
+
 api_key = os.getenv("GOOGLE_API_KEY")
 
 if not api_key:
-    raise ValueError("GOOGLE_API_KEY not found!")
+    raise ValueError(
+        "GOOGLE_API_KEY not found!"
+    )
 
 
-# Gemini configuration
-genai.configure(api_key=api_key)
+# ---------------------------------------------------------
+# Gemini model
+# ---------------------------------------------------------
 
-
-model = genai.GenerativeModel(
-    "gemini-flash-latest"
+llm = ChatGoogleGenerativeAI(
+    model="gemini-flash-latest",
+    google_api_key=api_key,
+    temperature=0.3,
 )
 
+
+# ---------------------------------------------------------
+# Generate Quiz
+# ---------------------------------------------------------
 
 def generate_quiz(text):
 
     # Clean PDF text
     text = text.replace("\n", " ").strip()
 
-    # Limit tokens
+    # Limit input size
     text = text[:15000]
 
-
     prompt = f"""
-
 You are an expert teacher.
 
 Read the following PDF content and create a quiz.
@@ -52,70 +65,127 @@ Rules:
 7. Do not use markdown.
 8. Do not add extra text.
 
-
 JSON FORMAT:
 
 [
- {{
-  "question":"Question text",
-  "options":[
-    "Option 1",
-    "Option 2",
-    "Option 3",
-    "Option 4"
-  ],
-  "answer":"Correct option text",
-  "explanation":"Short explanation"
- }}
+  {{
+    "question": "Question text",
+    "options": [
+      "Option 1",
+      "Option 2",
+      "Option 3",
+      "Option 4"
+    ],
+    "answer": "Correct option text",
+    "explanation": "Short explanation"
+  }}
 ]
-
 
 PDF CONTENT:
 
 {text}
-
 """
-
 
     try:
 
-        response = model.generate_content(prompt)
+        # Send request to Gemini
+        response = llm.invoke(prompt)
 
+        content = response.content
 
-        content = response.text.strip()
+        # -------------------------------------------------
+        # LangChain/Gemini may return a list
+        # -------------------------------------------------
 
+        if isinstance(content, list):
 
-        # Remove markdown if Gemini adds it
+            parts = []
+
+            for item in content:
+
+                if isinstance(item, dict):
+
+                    if item.get("type") == "text":
+
+                        parts.append(
+                            item.get("text", "")
+                        )
+
+                elif isinstance(item, str):
+
+                    parts.append(item)
+
+            content = "\n".join(parts)
+
+        # Make sure content is string
+        content = str(content).strip()
+
+        # -------------------------------------------------
+        # Remove markdown code fences
+        # -------------------------------------------------
 
         if content.startswith("```json"):
 
-            content = content.replace(
-                "```json",
-                ""
-            )
-
-            content = content.replace(
-                "```",
-                ""
-            )
-
+            content = content[7:]
 
         elif content.startswith("```"):
 
-            content = content.replace(
-                "```",
-                ""
-            )
+            content = content[3:]
 
+        if content.endswith("```"):
+
+            content = content[:-3]
+
+        content = content.strip()
+
+        # -------------------------------------------------
+        # Convert JSON text to Python list
+        # -------------------------------------------------
 
         quiz = json.loads(content)
 
+        # -------------------------------------------------
+        # Validate quiz
+        # -------------------------------------------------
 
-        return quiz
+        if not isinstance(quiz, list):
 
+            return []
+
+        valid_questions = []
+
+        for question in quiz:
+
+            if not isinstance(question, dict):
+                continue
+
+            if "question" not in question:
+                continue
+
+            if "options" not in question:
+                continue
+
+            if "answer" not in question:
+                continue
+
+            if "explanation" not in question:
+                continue
+
+            if not isinstance(
+                question["options"],
+                list
+            ):
+                continue
+
+            if len(question["options"]) != 4:
+                continue
+
+            valid_questions.append(question)
+
+        return valid_questions[:10]
 
     except Exception as e:
 
-        print("Quiz Error:",e)
+        print("Quiz Error:", e)
 
         return []
