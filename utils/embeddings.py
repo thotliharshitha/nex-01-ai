@@ -6,27 +6,26 @@ from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
 from langchain_community.vectorstores import FAISS
 
-# Load .env
+
+# Load .env for local development
 env_path = Path(__file__).resolve().parent.parent / ".env"
 load_dotenv(dotenv_path=env_path)
 
-# Get API Key
+# Read API key
 api_key = os.getenv("GOOGLE_API_KEY")
 
 if not api_key:
     raise ValueError("GOOGLE_API_KEY not found!")
 
-# Gemini Embedding Model
+
+# Gemini Embeddings
 embeddings = GoogleGenerativeAIEmbeddings(
-    model="models/gemini-embedding-001",
+    model="gemini-embedding-001",
     google_api_key=api_key
 )
 
 
 def split_text(text):
-    """
-    Split text into smaller chunks.
-    """
     splitter = RecursiveCharacterTextSplitter(
         chunk_size=1000,
         chunk_overlap=200
@@ -36,9 +35,6 @@ def split_text(text):
 
 
 def create_vector_store(text):
-    """
-    Create FAISS vector database from text.
-    """
     chunks = split_text(text)
 
     vector_store = FAISS.from_texts(
