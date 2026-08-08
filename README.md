@@ -1,244 +1,194 @@
-# 🚀 NEX-01 AI Study Assistant
+# NEX-01 AI Study Assistant
 
-<p align="center">
-  An AI-powered learning assistant that transforms PDF documents into an interactive study experience using Generative AI and Retrieval-Augmented Generation (RAG).
-</p>
+An AI-powered Study Assistant using RAG, LangChain, FAISS, and Google Gemini for intelligent document-based learning.
 
----
+## Overview
 
-## 📌 Project Overview
+NEX-01 AI Study Assistant is an AI-powered learning platform that helps users understand and interact with PDF documents efficiently.
 
-**NEX-01 AI Study Assistant** is an intelligent document-based learning platform designed to help students understand and interact with large academic documents efficiently.
+The application uses Retrieval-Augmented Generation (RAG) to retrieve relevant information from uploaded documents and generate context-aware responses using Google Gemini.
 
-The application allows users to upload PDF documents and communicate with them using Artificial Intelligence. It uses **Retrieval-Augmented Generation (RAG)** architecture combined with **LangChain, FAISS Vector Database, and Google Gemini AI** to provide accurate, context-aware responses.
+Users can upload study material and use AI-powered features for learning, revision, and exam preparation.
 
-Instead of manually searching through hundreds of pages, students can instantly ask questions, generate summaries, create quizzes, prepare flashcards, and download study materials.
+## Key Features
 
-The main goal of NEX-01 is to create a personalized AI learning companion that improves productivity, revision speed, and knowledge retention.
+### PDF Processing
+- Upload PDF documents.
+- Extract text from documents.
+- Split documents into manageable text chunks.
+- Generate embeddings for document content.
 
----
+### Chat with PDF
+- Ask questions about uploaded documents.
+- Retrieve relevant document content using FAISS.
+- Generate context-aware responses using Google Gemini.
+- Maintain chat history during the session.
 
-# ✨ Key Features
+### AI Summary
+- Generate structured summaries from PDF content.
+- Convert lengthy documents into concise study material.
+- Support faster revision.
 
-## 📄 Intelligent PDF Processing
+### Important Questions
+- Generate important questions from study material.
+- Identify key concepts from documents.
+- Support exam preparation.
 
-- Upload academic PDF documents.
-- Extract text automatically.
-- Process large documents efficiently.
-- Convert document content into searchable AI knowledge.
+### MCQ Quiz
+- Generate multiple-choice questions from uploaded content.
+- Provide an interactive way to test understanding.
+- Support self-assessment and revision.
 
----
+### AI Flashcards
+- Generate concise flashcards from document content.
+- Support active recall and memorization.
+- Provide quick revision material.
 
-## 💬 Chat With Your Documents
+### Study Material Downloads
+- Download generated summaries.
+- Download quiz content.
+- Download flashcards.
+- Download generated study material as PDF files.
 
-- Ask questions directly from uploaded PDFs.
-- Receive AI-generated answers based on document context.
-- Uses RAG pipeline to reduce irrelevant responses.
-- Provides interactive document conversations.
+## System Architecture
 
----
-
-## 📝 AI Summary Generator
-
-- Generates structured summaries from documents.
-- Converts lengthy content into concise study notes.
-- Helps students during quick revision.
-
----
-
-## ❓ Important Questions Generator
-
-- Creates important questions from uploaded materials.
-- Helps in exam preparation.
-- Identifies key concepts from documents.
-
----
-
-## 🧠 AI MCQ Quiz Generator
-
-- Generates multiple-choice questions automatically.
-- Provides an effective self-assessment method.
-- Improves understanding through practice.
-
----
-
-## 🔖 AI Flashcard Generator
-
-- Creates quick revision flashcards.
-- Helps in memorization and active learning.
-- Useful for last-minute preparation.
-
----
-
-## 📥 Download Study Materials
-
-Users can download:
-
-- AI-generated summaries.
-- Quiz questions.
-- Flashcards.
-- Study notes.
-
----
-
-## 🕒 Chat History
-
-- Maintains previous conversations.
-- Improves user experience.
-- Allows users to revisit discussions.
-
----
-
-# 🏗️ System Architecture
-
-```
-                 User
-                  |
-                  ↓
-          Streamlit Interface
-                  |
-                  ↓
-            PDF Upload
-                  |
-                  ↓
-        Text Extraction (PyPDF)
-                  |
-                  ↓
-          Text Chunking
-                  |
-                  ↓
-       Gemini Embedding Model
-                  |
-                  ↓
-          FAISS Vector Store
-                  |
-                  ↓
-        Retrieval Augmented Generation
-                  |
-                  ↓
-          Google Gemini AI
-                  |
-                  ↓
-          Intelligent Response
+```text
+User
+  |
+  v
+Streamlit Interface
+  |
+  v
+PDF Upload
+  |
+  v
+Text Extraction
+  |
+  v
+Text Chunking
+  |
+  v
+Embeddings
+  |
+  v
+FAISS Vector Store
+  |
+  v
+Relevant Context Retrieval
+  |
+  v
+Retrieval-Augmented Generation
+  |
+  v
+Google Gemini
+  |
+  v
+AI-Generated Response
 ```
 
----
+## Tech Stack
 
-# 🛠️ Tech Stack
-
-## Programming Language
-
+### Programming Language
 - Python
 
-## Frontend Framework
-
+### Application Framework
 - Streamlit
 
-## Artificial Intelligence
-
-- Google Gemini AI
-- Generative AI
+### Generative AI
+- Google Gemini
 - Retrieval-Augmented Generation (RAG)
 
-## AI Frameworks
-
+### AI Frameworks
 - LangChain
 - LangChain Community
 
-## Vector Database
+### Vector Search
+- FAISS
 
-- FAISS (Facebook AI Similarity Search)
-
-## PDF Processing
-
+### Document Processing
 - PyPDF
 
-## Environment Management
-
+### Environment Management
 - python-dotenv
 
-## Document Generation
-
+### PDF Generation
 - ReportLab
 
----
+## Project Structure
 
-# 📂 Project Structure
-
-```
-AI-Study-Assistant/
+```text
+nex-01-ai/
 │
-├── app.py
-├── Home.py
-├── README.md
-├── requirements.txt
-├── .env
-├── .gitignore
+├── .streamlit/
+│
+├── assets/
+│   └── screenshots/
+│       ├── chat.png
+│       ├── flashcards_output.png
+│       ├── home.png
+│       ├── quiz_output.png
+│       ├── summary_input.png
+│       ├── summary_output.png
+│       └── upload.png
 │
 ├── pages/
-│   ├── Chat.py
-│   ├── Summary.py
-│   ├── Quiz.py
-│   ├── Flashcards.py
-│   └── Notes.py
+│   ├── 1_Summary.py
+│   ├── 2_Quiz.py
+│   ├── 3_Flashcards.py
+│   └── 4_Chat.py
 │
 ├── utils/
-│   ├── pdf_reader.py
-│   ├── embeddings.py
+│   ├── __init__.py
 │   ├── chatbot.py
-│   ├── summary.py
+│   ├── embeddings.py
+│   ├── pdf_generator.py
+│   ├── pdf_reader.py
 │   ├── quiz.py
-│   └── pdf_generator.py
+│   └── summary.py
 │
-├── data/
-│   ├── uploads/
-│   ├── vector_store/
-│   └── chat_history/
-│
-└── venv/
+├── .gitignore
+├── Home.py
+├── README.md
+└── requirements.txt
 ```
 
----
+Sensitive files such as `.env` and the local virtual environment are excluded from version control.
 
-# ⚙️ Installation & Setup
+## Installation
 
-## 1. Clone Repository
+### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/yourusername/nex-01-ai.git
+git clone https://github.com/thotliharshitha/nex-01-ai.git
 ```
 
-## 2. Navigate to Project Folder
+### 2. Navigate to the Project Directory
 
 ```bash
-cd AI-Study-Assistant
+cd nex-01-ai
 ```
 
-## 3. Create Virtual Environment
+### 3. Create a Virtual Environment
 
 ```bash
 python -m venv venv
 ```
 
-Activate environment:
+### 4. Activate the Virtual Environment
 
-### Windows
+On Windows:
 
 ```bash
 venv\Scripts\activate
 ```
 
----
-
-## 4. Install Dependencies
+### 5. Install Dependencies
 
 ```bash
 pip install -r requirements.txt
 ```
 
----
-
-# 🔑 API Configuration
+## API Configuration
 
 Create a `.env` file in the project root directory.
 
@@ -248,120 +198,121 @@ Add your Google Gemini API key:
 GOOGLE_API_KEY=your_api_key_here
 ```
 
----
+Do not commit the `.env` file or expose your API key publicly.
 
-# ▶️ Run Application
+## Run the Application
 
-Start Streamlit application:
+Start the Streamlit application:
 
 ```bash
-streamlit run app.py
+streamlit run Home.py
 ```
 
-The application will open in your browser.
+The application will open in your default web browser.
 
----
+## Working Flow
 
-# 🔄 Working Flow
-
-```
+```text
 Upload PDF
-     ↓
+    |
+    v
 Extract Text
-     ↓
-Split Into Chunks
-     ↓
+    |
+    v
+Split Text into Chunks
+    |
+    v
 Generate Embeddings
-     ↓
-Store in FAISS Database
-     ↓
+    |
+    v
+Store Embeddings in FAISS
+    |
+    v
 Retrieve Relevant Information
-     ↓
+    |
+    v
+Pass Context to Google Gemini
+    |
+    v
 Generate AI Response
 ```
 
----
+## Screenshots
 
-# 📸 Screenshots
+### Home Page
 
-Screenshots will be added after final UI capture.
+![Home Page](assets/screenshots/home.png)
 
-## Home Page
+### PDF Upload
 
-(Add Screenshot)
+![PDF Upload](assets/screenshots/upload.png)
 
-## Chat Page
+### Chat with PDF
 
-(Add Screenshot)
+![Chat with PDF](assets/screenshots/chat.png)
 
-## Summary Page
+### AI Summary
 
-(Add Screenshot)
+![Summary Input](assets/screenshots/summary_input.png)
 
-## Quiz Page
+![Summary Output](assets/screenshots/summary_output.png)
 
-(Add Screenshot)
+### MCQ Quiz
 
-## Flashcards Page
+![Quiz Output](assets/screenshots/quiz_output.png)
 
-(Add Screenshot)
+### AI Flashcards
 
----
+![Flashcards Output](assets/screenshots/flashcards_output.png)
 
-# 🚀 Future Enhancements
+## Development Roadmap
 
-- Multi-PDF conversation support.
-- User authentication system.
-- Cloud deployment.
-- Supabase database integration.
-- AI voice assistant.
-- Personalized learning dashboard.
-- Mobile application.
-- Learning analytics.
+### Completed
 
----
+- PDF Upload
+- PDF Text Extraction
+- Text Chunking
+- Document Embeddings
+- FAISS Vector Search
+- Google Gemini Integration
+- Retrieval-Augmented Generation
+- Chat with PDF
+- AI Summary Generation
+- Important Questions Generation
+- MCQ Quiz Generation
+- Flashcard Generation
+- Study Material Downloads
+- Chat History
 
-# 🗺️ Development Roadmap
+### Planned
 
-## Completed Features
+- Multi-PDF Chat
+- User Authentication
+- Cloud Storage
+- Supabase Integration
+- Voice AI
+- Personalized Learning Dashboard
+- Learning Analytics
 
-✅ PDF Upload  
-✅ Text Extraction  
-✅ Document Chunking  
-✅ AI Embeddings  
-✅ FAISS Vector Search  
-✅ Gemini AI Integration  
-✅ Chat With PDF  
-✅ AI Summary Generation  
-✅ Quiz Generation  
-✅ Flashcard Generation  
-✅ PDF Downloads  
+## Future Enhancements
 
-## Upcoming Features
+The project can be extended with multi-document conversations, user authentication, cloud storage, voice-based interaction, personalized learning dashboards, and learning analytics.
 
-⬜ Multi-document Chat  
-⬜ User Login  
-⬜ Cloud Storage  
-⬜ Voice AI  
-⬜ Analytics Dashboard  
+## Why NEX-01?
 
----
+NEX-01 demonstrates the practical application of Generative AI and Retrieval-Augmented Generation to solve a real-world learning problem.
 
-# 🎯 Why NEX-01?
+The project combines:
 
-NEX-01 combines Artificial Intelligence, Natural Language Processing, and modern Retrieval-Augmented Generation techniques to create a smarter way of learning from documents.
-
-It demonstrates practical implementation of:
-
-- Generative AI
 - Large Language Models
-- Vector Databases
-- RAG Architecture
+- Retrieval-Augmented Generation
+- Vector Search
+- Semantic Retrieval
+- Document Processing
+- Generative AI
 - AI Application Development
 
----
-
-# 👩‍💻 Author
+## Author
 
 **Harshitha Thotli**
 
