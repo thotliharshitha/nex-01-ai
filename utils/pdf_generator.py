@@ -1,268 +1,191 @@
 from io import BytesIO
+import re
 
-from reportlab.lib.styles import getSampleStyleSheet
-from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer
+from reportlab.lib.pagesizes import A4
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib.enums import TA_CENTER
+from reportlab.platypus import (
+    SimpleDocTemplate,
+    Paragraph,
+    Spacer,
+)
+from reportlab.lib.units import mm
 
-
-styles = getSampleStyleSheet()
-
-
-# ---------------------------------------------------
-# Summary PDF
-# ---------------------------------------------------
 
 def create_summary_pdf(summary):
 
     buffer = BytesIO()
 
-    doc = SimpleDocTemplate(buffer)
-
-    content = []
-
-    content.append(
-        Paragraph(
-            "NEX-01 AI Summary",
-            styles["Title"]
-        )
+    doc = SimpleDocTemplate(
+        buffer,
+        pagesize=A4,
+        rightMargin=20 * mm,
+        leftMargin=20 * mm,
+        topMargin=20 * mm,
+        bottomMargin=20 * mm,
     )
 
-    content.append(
-        Spacer(1, 20)
+    styles = getSampleStyleSheet()
+
+    title_style = ParagraphStyle(
+        "TitleStyle",
+        parent=styles["Title"],
+        alignment=TA_CENTER,
+        fontSize=20,
+        leading=24,
+        spaceAfter=18,
     )
 
+    heading_style = ParagraphStyle(
+        "HeadingStyle",
+        parent=styles["Heading1"],
+        fontSize=15,
+        leading=19,
+        spaceBefore=12,
+        spaceAfter=8,
+    )
+
+    subheading_style = ParagraphStyle(
+        "SubHeadingStyle",
+        parent=styles["Heading2"],
+        fontSize=12,
+        leading=16,
+        spaceBefore=8,
+        spaceAfter=5,
+    )
+
+    body_style = ParagraphStyle(
+        "BodyStyle",
+        parent=styles["BodyText"],
+        fontSize=10,
+        leading=15,
+        spaceAfter=5,
+    )
+
+    bullet_style = ParagraphStyle(
+        "BulletStyle",
+        parent=body_style,
+        leftIndent=15,
+        firstLineIndent=-8,
+    )
+
+    story = []
+
+    # Convert Gemini list response to string
+    if isinstance(summary, list):
+
+        parts = []
+
+        for item in summary:
+
+            if isinstance(item, dict):
+
+                if item.get("type") == "text":
+                    parts.append(
+                        item.get("text", "")
+                    )
+
+            elif isinstance(item, str):
+                parts.append(item)
+
+        summary = "\n".join(parts)
+
+    summary = str(summary)
+
+    # Process summary line by line
     for line in summary.split("\n"):
 
-        if line.strip():
+        line = line.strip()
 
-            content.append(
+        if not line:
+            story.append(Spacer(1, 5))
+            continue
+
+        # Remove markdown horizontal lines
+        if line in ("---", "***", "___"):
+            continue
+
+        # H3
+        if line.startswith("### "):
+
+            text = line[4:].strip()
+
+            story.append(
                 Paragraph(
-                    line,
-                    styles["BodyText"]
+                    text,
+                    subheading_style
                 )
             )
 
-            content.append(
-                Spacer(1, 8)
-            )
+            continue
 
-    doc.build(content)
+        # H2
+        if line.startswith("## "):
 
-    buffer.seek(0)
+            text = line[3:].strip()
 
-    return buffer
-
-
-# ---------------------------------------------------
-# Important Questions PDF
-# ---------------------------------------------------
-
-def create_questions_pdf(questions):
-
-    buffer = BytesIO()
-
-    doc = SimpleDocTemplate(buffer)
-
-    content = []
-
-    content.append(
-        Paragraph(
-            "NEX-01 Important Questions",
-            styles["Title"]
-        )
-    )
-
-    content.append(
-        Spacer(1, 20)
-    )
-
-    for i, question in enumerate(questions):
-
-        content.append(
-            Paragraph(
-                f"<b>{i+1}.</b> {question}",
-                styles["BodyText"]
-            )
-        )
-
-        content.append(
-            Spacer(1, 10)
-        )
-
-    doc.build(content)
-
-    buffer.seek(0)
-
-    return buffer
-
-
-# ---------------------------------------------------
-# Quiz PDF
-# ---------------------------------------------------
-
-def create_quiz_pdf(quiz):
-
-    buffer = BytesIO()
-
-    doc = SimpleDocTemplate(buffer)
-
-    content = []
-
-    content.append(
-        Paragraph(
-            "NEX-01 AI Quiz",
-            styles["Title"]
-        )
-    )
-
-    content.append(
-        Spacer(1, 20)
-    )
-
-    for i, item in enumerate(quiz):
-
-        content.append(
-            Paragraph(
-                f"<b>Question {i+1}</b><br/>{item['question']}",
-                styles["BodyText"]
-            )
-        )
-
-        content.append(
-            Spacer(1, 8)
-        )
-
-        for option in item["options"]:
-
-            content.append(
+            story.append(
                 Paragraph(
-                    option,
-                    styles["BodyText"]
+                    text,
+                    heading_style
                 )
             )
 
-        content.append(
-            Spacer(1, 8)
+            continue
+
+        # H1
+        if line.startswith("# "):
+
+            text = line[2:].strip()
+
+            story.append(
+                Paragraph(
+                    text,
+                    title_style
+                )
+            )
+
+            continue
+
+        # Bullet points
+        if line.startswith("* ") or line.startswith("- "):
+
+            text = line[2:].strip()
+
+            text = re.sub(
+                r"\*\*(.*?)\*\*",
+                r"<b>\1</b>",
+                text
+            )
+
+            story.append(
+                Paragraph(
+                    "• " + text,
+                    bullet_style
+                )
+            )
+
+            continue
+
+        # Normal text
+        text = re.sub(
+            r"\*\*(.*?)\*\*",
+            r"<b>\1</b>",
+            line
         )
 
-        content.append(
+        story.append(
             Paragraph(
-                f"<b>Answer:</b> {item['answer']}",
-                styles["BodyText"]
+                text,
+                body_style
             )
         )
 
-        content.append(
-            Spacer(1, 15)
-        )
+    # Build PDF into memory
+    doc.build(story)
 
-    doc.build(content)
-
+    # Move to beginning of buffer
     buffer.seek(0)
 
-    return buffer
-
-
-# ---------------------------------------------------
-# Flashcards PDF
-# ---------------------------------------------------
-
-def create_flashcard_pdf(flashcards):
-
-    buffer = BytesIO()
-
-    doc = SimpleDocTemplate(buffer)
-
-    content = []
-
-    content.append(
-        Paragraph(
-            "NEX-01 AI Flashcards",
-            styles["Title"]
-        )
-    )
-
-    content.append(
-        Spacer(1, 20)
-    )
-
-    for i, card in enumerate(flashcards):
-
-        content.append(
-            Paragraph(
-                f"<b>{i+1}. Question</b><br/>{card['question']}",
-                styles["BodyText"]
-            )
-        )
-
-        content.append(
-            Spacer(1, 8)
-        )
-
-        content.append(
-            Paragraph(
-                f"<b>Answer</b><br/>{card['answer']}",
-                styles["BodyText"]
-            )
-        )
-
-        content.append(
-            Spacer(1, 20)
-        )
-
-    doc.build(content)
-
-    buffer.seek(0)
-
-    return buffer
-
-
-# ---------------------------------------------------
-# Chat PDF
-# ---------------------------------------------------
-
-def create_chat_pdf(chat_history):
-
-    buffer = BytesIO()
-
-    doc = SimpleDocTemplate(buffer)
-
-    content = []
-
-    content.append(
-        Paragraph(
-            "NEX-01 AI Chat",
-            styles["Title"]
-        )
-    )
-
-    content.append(
-        Spacer(1, 20)
-    )
-
-    for chat in chat_history:
-
-        role = "You" if chat["role"] == "user" else "NEX-01 AI"
-
-        content.append(
-            Paragraph(
-                f"<b>{role}</b>",
-                styles["Heading3"]
-            )
-        )
-
-        content.append(
-            Paragraph(
-                chat["message"].replace("\n", "<br/>"),
-                styles["BodyText"]
-            )
-        )
-
-        content.append(
-            Spacer(1, 12)
-        )
-
-    doc.build(content)
-
-    buffer.seek(0)
-
-    return buffer
+    # Return actual PDF bytes
+    return buffer.getvalue()

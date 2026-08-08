@@ -17,7 +17,6 @@ st.caption(
     "Upload your document and generate an AI-powered summary."
 )
 
-
 st.divider()
 
 
@@ -40,6 +39,7 @@ if uploaded_file:
 
     st.divider()
 
+
     if st.button(
         "Generate Summary",
         use_container_width=True
@@ -60,14 +60,18 @@ if "summary" in st.session_state:
 
     with st.container(border=True):
 
-        st.write(
+        st.markdown(
             st.session_state["summary"]
         )
 
+
+    # Create PDF
     pdf = create_summary_pdf(
         st.session_state["summary"]
     )
 
+
+    # Download PDF
     st.download_button(
         label="Download Summary PDF",
         data=pdf,
