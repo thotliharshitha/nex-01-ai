@@ -319,8 +319,6 @@ The project combines:
 B.Tech Computer Science Engineering  
 Specialization: Artificial Intelligence & Machine Learning
 
----
 
-# ⭐ Support
 
-If you like this project, consider giving it a ⭐ on GitHub.
+
