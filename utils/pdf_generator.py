@@ -4,11 +4,7 @@ import re
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.enums import TA_CENTER
-from reportlab.platypus import (
-    SimpleDocTemplate,
-    Paragraph,
-    Spacer,
-)
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
 from reportlab.lib.units import mm
 
 
@@ -75,7 +71,7 @@ def create_summary_pdf(summary):
 
     story = []
 
-    # Convert Gemini list response to string
+    # Gemini may return a list
     if isinstance(summary, list):
 
         parts = []
@@ -98,7 +94,6 @@ def create_summary_pdf(summary):
 
     summary = str(summary)
 
-    # Process summary line by line
     for line in summary.split("\n"):
 
         line = line.strip()
@@ -107,53 +102,42 @@ def create_summary_pdf(summary):
             story.append(Spacer(1, 5))
             continue
 
-        # Remove markdown horizontal lines
         if line in ("---", "***", "___"):
             continue
 
-        # H3
         if line.startswith("### "):
-
-            text = line[4:].strip()
 
             story.append(
                 Paragraph(
-                    text,
+                    line[4:].strip(),
                     subheading_style
                 )
             )
 
             continue
 
-        # H2
         if line.startswith("## "):
-
-            text = line[3:].strip()
 
             story.append(
                 Paragraph(
-                    text,
+                    line[3:].strip(),
                     heading_style
                 )
             )
 
             continue
 
-        # H1
         if line.startswith("# "):
-
-            text = line[2:].strip()
 
             story.append(
                 Paragraph(
-                    text,
+                    line[2:].strip(),
                     title_style
                 )
             )
 
             continue
 
-        # Bullet points
         if line.startswith("* ") or line.startswith("- "):
 
             text = line[2:].strip()
@@ -173,7 +157,6 @@ def create_summary_pdf(summary):
 
             continue
 
-        # Normal text
         text = re.sub(
             r"\*\*(.*?)\*\*",
             r"<b>\1</b>",
@@ -266,11 +249,13 @@ def create_quiz_pdf(quiz):
         )
     )
 
-    # Make sure quiz is a list
     if not isinstance(quiz, list):
         quiz = []
 
-    for index, question in enumerate(quiz, start=1):
+    for index, question in enumerate(
+        quiz,
+        start=1
+    ):
 
         if not isinstance(question, dict):
             continue
@@ -301,7 +286,6 @@ def create_quiz_pdf(quiz):
             )
         )
 
-        # Question
         story.append(
             Paragraph(
                 f"{index}. {question_text}",
@@ -309,19 +293,18 @@ def create_quiz_pdf(quiz):
             )
         )
 
-        # Options
         if isinstance(options, list):
+
+            letters = [
+                "A",
+                "B",
+                "C",
+                "D"
+            ]
 
             for option_index, option in enumerate(
                 options
             ):
-
-                letters = [
-                    "A",
-                    "B",
-                    "C",
-                    "D"
-                ]
 
                 if option_index < 4:
 
@@ -332,7 +315,6 @@ def create_quiz_pdf(quiz):
                         )
                     )
 
-        # Correct answer
         if answer:
 
             story.append(
@@ -342,13 +324,117 @@ def create_quiz_pdf(quiz):
                 )
             )
 
-        # Explanation
         if explanation:
 
             story.append(
                 Paragraph(
                     f"<b>Explanation:</b> {explanation}",
                     explanation_style
+                )
+            )
+
+    doc.build(story)
+
+    buffer.seek(0)
+
+    return buffer.getvalue()
+
+
+# =========================================================
+# FLASHCARDS PDF
+# =========================================================
+
+def create_flashcard_pdf(flashcards):
+
+    buffer = BytesIO()
+
+    doc = SimpleDocTemplate(
+        buffer,
+        pagesize=A4,
+        rightMargin=20 * mm,
+        leftMargin=20 * mm,
+        topMargin=20 * mm,
+        bottomMargin=20 * mm,
+    )
+
+    styles = getSampleStyleSheet()
+
+    title_style = ParagraphStyle(
+        "FlashcardTitle",
+        parent=styles["Title"],
+        alignment=TA_CENTER,
+        fontSize=20,
+        leading=24,
+        spaceAfter=20,
+    )
+
+    question_style = ParagraphStyle(
+        "FlashcardQuestion",
+        parent=styles["Heading2"],
+        fontSize=12,
+        leading=16,
+        spaceBefore=10,
+        spaceAfter=6,
+    )
+
+    answer_style = ParagraphStyle(
+        "FlashcardAnswer",
+        parent=styles["BodyText"],
+        fontSize=10,
+        leading=15,
+        spaceAfter=14,
+    )
+
+    story = []
+
+    story.append(
+        Paragraph(
+            "NEX-01 AI Flashcards",
+            title_style
+        )
+    )
+
+    if not isinstance(flashcards, list):
+        flashcards = []
+
+    for index, card in enumerate(
+        flashcards,
+        start=1
+    ):
+
+        if not isinstance(card, dict):
+            continue
+
+        question = str(
+            card.get(
+                "question",
+                ""
+            )
+        ).strip()
+
+        answer = str(
+            card.get(
+                "answer",
+                ""
+            )
+        ).strip()
+
+        if not question:
+            continue
+
+        story.append(
+            Paragraph(
+                f"{index}. {question}",
+                question_style
+            )
+        )
+
+        if answer:
+
+            story.append(
+                Paragraph(
+                    f"<b>Answer:</b> {answer}",
+                    answer_style
                 )
             )
 
