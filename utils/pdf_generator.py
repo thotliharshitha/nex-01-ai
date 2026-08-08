@@ -1,10 +1,18 @@
 from io import BytesIO
 import re
+from xml.sax.saxutils import escape
 
 from reportlab.lib.pagesizes import A4
-from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib.styles import (
+    getSampleStyleSheet,
+    ParagraphStyle
+)
 from reportlab.lib.enums import TA_CENTER
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
+from reportlab.platypus import (
+    SimpleDocTemplate,
+    Paragraph,
+    Spacer
+)
 from reportlab.lib.units import mm
 
 
@@ -28,7 +36,7 @@ def create_summary_pdf(summary):
     styles = getSampleStyleSheet()
 
     title_style = ParagraphStyle(
-        "TitleStyle",
+        "SummaryTitle",
         parent=styles["Title"],
         alignment=TA_CENTER,
         fontSize=20,
@@ -37,7 +45,7 @@ def create_summary_pdf(summary):
     )
 
     heading_style = ParagraphStyle(
-        "HeadingStyle",
+        "SummaryHeading",
         parent=styles["Heading1"],
         fontSize=15,
         leading=19,
@@ -46,7 +54,7 @@ def create_summary_pdf(summary):
     )
 
     subheading_style = ParagraphStyle(
-        "SubHeadingStyle",
+        "SummarySubHeading",
         parent=styles["Heading2"],
         fontSize=12,
         leading=16,
@@ -55,7 +63,7 @@ def create_summary_pdf(summary):
     )
 
     body_style = ParagraphStyle(
-        "BodyStyle",
+        "SummaryBody",
         parent=styles["BodyText"],
         fontSize=10,
         leading=15,
@@ -63,7 +71,7 @@ def create_summary_pdf(summary):
     )
 
     bullet_style = ParagraphStyle(
-        "BulletStyle",
+        "SummaryBullet",
         parent=body_style,
         leftIndent=15,
         firstLineIndent=-8,
@@ -71,7 +79,7 @@ def create_summary_pdf(summary):
 
     story = []
 
-    # Gemini may return a list
+    # Handle Gemini response list
     if isinstance(summary, list):
 
         parts = []
@@ -99,11 +107,18 @@ def create_summary_pdf(summary):
         line = line.strip()
 
         if not line:
-            story.append(Spacer(1, 5))
+
+            story.append(
+                Spacer(1, 5)
+            )
+
             continue
 
         if line in ("---", "***", "___"):
+
             continue
+
+        line = escape(line)
 
         if line.startswith("### "):
 
@@ -206,7 +221,7 @@ def create_quiz_pdf(quiz):
     )
 
     question_style = ParagraphStyle(
-        "QuestionStyle",
+        "QuizQuestion",
         parent=styles["Heading2"],
         fontSize=12,
         leading=16,
@@ -215,7 +230,7 @@ def create_quiz_pdf(quiz):
     )
 
     option_style = ParagraphStyle(
-        "OptionStyle",
+        "QuizOption",
         parent=styles["BodyText"],
         fontSize=10,
         leading=15,
@@ -224,7 +239,7 @@ def create_quiz_pdf(quiz):
     )
 
     answer_style = ParagraphStyle(
-        "AnswerStyle",
+        "QuizAnswer",
         parent=styles["BodyText"],
         fontSize=10,
         leading=15,
@@ -233,7 +248,7 @@ def create_quiz_pdf(quiz):
     )
 
     explanation_style = ParagraphStyle(
-        "ExplanationStyle",
+        "QuizExplanation",
         parent=styles["BodyText"],
         fontSize=9.5,
         leading=14,
@@ -250,6 +265,7 @@ def create_quiz_pdf(quiz):
     )
 
     if not isinstance(quiz, list):
+
         quiz = []
 
     for index, question in enumerate(
@@ -258,12 +274,15 @@ def create_quiz_pdf(quiz):
     ):
 
         if not isinstance(question, dict):
+
             continue
 
-        question_text = str(
-            question.get(
-                "question",
-                ""
+        question_text = escape(
+            str(
+                question.get(
+                    "question",
+                    ""
+                )
             )
         )
 
@@ -272,17 +291,21 @@ def create_quiz_pdf(quiz):
             []
         )
 
-        answer = str(
-            question.get(
-                "answer",
-                ""
+        answer = escape(
+            str(
+                question.get(
+                    "answer",
+                    ""
+                )
             )
         )
 
-        explanation = str(
-            question.get(
-                "explanation",
-                ""
+        explanation = escape(
+            str(
+                question.get(
+                    "explanation",
+                    ""
+                )
             )
         )
 
@@ -308,9 +331,14 @@ def create_quiz_pdf(quiz):
 
                 if option_index < 4:
 
+                    option_text = escape(
+                        str(option)
+                    )
+
                     story.append(
                         Paragraph(
-                            f"{letters[option_index]}. {option}",
+                            f"{letters[option_index]}. "
+                            f"{option_text}",
                             option_style
                         )
                     )
@@ -328,7 +356,8 @@ def create_quiz_pdf(quiz):
 
             story.append(
                 Paragraph(
-                    f"<b>Explanation:</b> {explanation}",
+                    f"<b>Explanation:</b> "
+                    f"{explanation}",
                     explanation_style
                 )
             )
@@ -395,6 +424,7 @@ def create_flashcard_pdf(flashcards):
     )
 
     if not isinstance(flashcards, list):
+
         flashcards = []
 
     for index, card in enumerate(
@@ -403,23 +433,29 @@ def create_flashcard_pdf(flashcards):
     ):
 
         if not isinstance(card, dict):
+
             continue
 
-        question = str(
-            card.get(
-                "question",
-                ""
-            )
-        ).strip()
+        question = escape(
+            str(
+                card.get(
+                    "question",
+                    ""
+                )
+            ).strip()
+        )
 
-        answer = str(
-            card.get(
-                "answer",
-                ""
-            )
-        ).strip()
+        answer = escape(
+            str(
+                card.get(
+                    "answer",
+                    ""
+                )
+            ).strip()
+        )
 
         if not question:
+
             continue
 
         story.append(
@@ -437,6 +473,147 @@ def create_flashcard_pdf(flashcards):
                     answer_style
                 )
             )
+
+    doc.build(story)
+
+    buffer.seek(0)
+
+    return buffer.getvalue()
+
+
+# =========================================================
+# CHAT PDF
+# =========================================================
+
+def create_chat_pdf(chat_history):
+
+    buffer = BytesIO()
+
+    doc = SimpleDocTemplate(
+        buffer,
+        pagesize=A4,
+        rightMargin=20 * mm,
+        leftMargin=20 * mm,
+        topMargin=20 * mm,
+        bottomMargin=20 * mm,
+    )
+
+    styles = getSampleStyleSheet()
+
+    title_style = ParagraphStyle(
+        "ChatTitle",
+        parent=styles["Title"],
+        alignment=TA_CENTER,
+        fontSize=20,
+        leading=24,
+        spaceAfter=20,
+    )
+
+    role_style = ParagraphStyle(
+        "ChatRole",
+        parent=styles["Heading2"],
+        fontSize=12,
+        leading=16,
+        spaceBefore=10,
+        spaceAfter=6,
+    )
+
+    message_style = ParagraphStyle(
+        "ChatMessage",
+        parent=styles["BodyText"],
+        fontSize=10,
+        leading=15,
+        spaceAfter=14,
+    )
+
+    story = []
+
+    story.append(
+        Paragraph(
+            "NEX-01 AI Study Chat",
+            title_style
+        )
+    )
+
+    if not isinstance(chat_history, list):
+
+        chat_history = []
+
+    for chat in chat_history:
+
+        if not isinstance(chat, dict):
+
+            continue
+
+        role = chat.get(
+            "role",
+            ""
+        )
+
+        message = str(
+            chat.get(
+                "message",
+                ""
+            )
+        ).strip()
+
+        if not message:
+
+            continue
+
+        # Escape XML-sensitive characters
+        message = escape(message)
+
+        # Convert new lines to PDF line breaks
+        message = message.replace(
+            "\n",
+            "<br/>"
+        )
+
+        if role == "user":
+
+            story.append(
+                Paragraph(
+                    "<b>You</b>",
+                    role_style
+                )
+            )
+
+            story.append(
+                Paragraph(
+                    message,
+                    message_style
+                )
+            )
+
+        elif role == "assistant":
+
+            story.append(
+                Paragraph(
+                    "<b>NEX-01 AI</b>",
+                    role_style
+                )
+            )
+
+            story.append(
+                Paragraph(
+                    message,
+                    message_style
+                )
+            )
+
+        story.append(
+            Spacer(1, 5)
+        )
+
+    if len(story) == 1:
+
+        story.append(
+            Paragraph(
+                "No chat messages available.",
+                message_style
+            )
+        )
 
     doc.build(story)
 
