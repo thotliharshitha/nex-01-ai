@@ -1,53 +1,42 @@
 
 from io import BytesIO
 import re
+from html import escape
 
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.enums import TA_CENTER
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
+from reportlab.platypus import (
+    SimpleDocTemplate,
+    Paragraph,
+    Spacer,
+)
 from reportlab.lib.units import mm
 
 
 # =========================================================
-# HELPER
+# HELPER FUNCTION
 # =========================================================
 
-def format_markdown(text):
+def clean_text(text):
     """
-    Convert basic Markdown formatting into
-    ReportLab-compatible formatting.
+    Clean text before putting it into a PDF.
+    Removes Markdown bold markers and safely handles HTML.
     """
 
     text = str(text)
 
-    # Escape XML-sensitive characters
-    text = (
-        text.replace("&", "&amp;")
-        .replace("<", "&lt;")
-        .replace(">", "&gt;")
-    )
+    # Remove Markdown bold
+    text = text.replace("**", "")
 
-    # Bold: **text**
-    text = re.sub(
-        r"\*\*(.*?)\*\*",
-        r"<b>\1</b>",
-        text
-    )
+    # Remove Markdown italic markers
+    text = text.replace("__", "")
 
-    # Italic: *text*
-    text = re.sub(
-        r"(?<!\*)\*([^*]+)\*(?!\*)",
-        r"<i>\1</i>",
-        text
-    )
+    # Escape HTML characters
+    text = escape(text)
 
-    # Inline code: `text`
-    text = re.sub(
-        r"`([^`]+)`",
-        r"<font name='Courier'>\1</font>",
-        text
-    )
+    # Preserve line breaks
+    text = text.replace("\n", "<br/>")
 
     return text
 
@@ -142,28 +131,19 @@ def create_summary_pdf(summary):
         line = line.strip()
 
         if not line:
-
             story.append(
                 Spacer(1, 5)
             )
-
             continue
 
-        if line in (
-            "---",
-            "***",
-            "___"
-        ):
-
+        if line in ("---", "***", "___"):
             continue
 
         if line.startswith("### "):
 
             story.append(
                 Paragraph(
-                    format_markdown(
-                        line[4:].strip()
-                    ),
+                    clean_text(line[4:].strip()),
                     subheading_style
                 )
             )
@@ -174,9 +154,7 @@ def create_summary_pdf(summary):
 
             story.append(
                 Paragraph(
-                    format_markdown(
-                        line[3:].strip()
-                    ),
+                    clean_text(line[3:].strip()),
                     heading_style
                 )
             )
@@ -187,34 +165,42 @@ def create_summary_pdf(summary):
 
             story.append(
                 Paragraph(
-                    format_markdown(
-                        line[2:].strip()
-                    ),
+                    clean_text(line[2:].strip()),
                     title_style
                 )
             )
 
             continue
 
-        if (
-            line.startswith("* ")
-            or line.startswith("- ")
-        ):
+        if line.startswith("* ") or line.startswith("- "):
 
             text = line[2:].strip()
 
+            text = clean_text(text)
+
             story.append(
                 Paragraph(
-                    "• " + format_markdown(text),
+                    "• " + text,
                     bullet_style
                 )
             )
 
             continue
 
+        text = clean_text(line)
+
         story.append(
             Paragraph(
-                format_markdown(line),
+                text,
+                body_style
+            )
+        )
+
+    if not story:
+
+        story.append(
+            Paragraph(
+                "No summary available.",
                 body_style
             )
         )
@@ -299,7 +285,6 @@ def create_quiz_pdf(quiz):
     )
 
     if not isinstance(quiz, list):
-
         quiz = []
 
     for index, question in enumerate(
@@ -308,7 +293,6 @@ def create_quiz_pdf(quiz):
     ):
 
         if not isinstance(question, dict):
-
             continue
 
         question_text = str(
@@ -339,8 +323,7 @@ def create_quiz_pdf(quiz):
 
         story.append(
             Paragraph(
-                f"{index}. "
-                f"{format_markdown(question_text)}",
+                f"{index}. {clean_text(question_text)}",
                 question_style
             )
         )
@@ -363,7 +346,7 @@ def create_quiz_pdf(quiz):
                     story.append(
                         Paragraph(
                             f"{letters[option_index]}. "
-                            f"{format_markdown(option)}",
+                            f"{clean_text(option)}",
                             option_style
                         )
                     )
@@ -372,8 +355,8 @@ def create_quiz_pdf(quiz):
 
             story.append(
                 Paragraph(
-                    "<b>Correct Answer:</b> "
-                    f"{format_markdown(answer)}",
+                    f"<b>Correct Answer:</b> "
+                    f"{clean_text(answer)}",
                     answer_style
                 )
             )
@@ -382,11 +365,20 @@ def create_quiz_pdf(quiz):
 
             story.append(
                 Paragraph(
-                    "<b>Explanation:</b> "
-                    f"{format_markdown(explanation)}",
+                    f"<b>Explanation:</b> "
+                    f"{clean_text(explanation)}",
                     explanation_style
                 )
             )
+
+    if len(story) == 1:
+
+        story.append(
+            Paragraph(
+                "No quiz questions available.",
+                answer_style
+            )
+        )
 
     doc.build(story)
 
@@ -450,16 +442,13 @@ def create_flashcard_pdf(flashcards):
     )
 
     if not isinstance(flashcards, list):
-
         flashcards = []
 
-    for index, card in enumerate(
-        flashcards,
-        start=1
-    ):
+    card_number = 0
+
+    for card in flashcards:
 
         if not isinstance(card, dict):
-
             continue
 
         question = str(
@@ -477,13 +466,14 @@ def create_flashcard_pdf(flashcards):
         ).strip()
 
         if not question:
-
             continue
+
+        card_number += 1
 
         story.append(
             Paragraph(
-                f"{index}. "
-                f"{format_markdown(question)}",
+                f"{card_number}. "
+                f"{clean_text(question)}",
                 question_style
             )
         )
@@ -492,11 +482,20 @@ def create_flashcard_pdf(flashcards):
 
             story.append(
                 Paragraph(
-                    "<b>Answer:</b> "
-                    f"{format_markdown(answer)}",
+                    f"<b>Answer:</b> "
+                    f"{clean_text(answer)}",
                     answer_style
                 )
             )
+
+    if card_number == 0:
+
+        story.append(
+            Paragraph(
+                "No flashcards available.",
+                answer_style
+            )
+        )
 
     doc.build(story)
 
@@ -536,7 +535,7 @@ def create_chat_pdf(chat_history):
     question_style = ParagraphStyle(
         "ChatQuestion",
         parent=styles["Heading2"],
-        fontSize=12,
+        fontSize=11,
         leading=16,
         spaceBefore=10,
         spaceAfter=6,
@@ -547,19 +546,12 @@ def create_chat_pdf(chat_history):
         parent=styles["BodyText"],
         fontSize=10,
         leading=15,
-        spaceAfter=8,
-    )
-
-    bullet_style = ParagraphStyle(
-        "ChatBullet",
-        parent=answer_style,
-        leftIndent=15,
-        firstLineIndent=-8,
-        spaceAfter=4,
+        spaceAfter=14,
     )
 
     story = []
 
+    # Title
     story.append(
         Paragraph(
             "NEX-01 AI Study Chat",
@@ -567,178 +559,91 @@ def create_chat_pdf(chat_history):
         )
     )
 
-    # =====================================================
-    # LIST CHAT HISTORY
-    # =====================================================
+    story.append(
+        Spacer(1, 10)
+    )
 
-    if isinstance(chat_history, list):
+    # Make sure chat history is a list
+    if not isinstance(chat_history, list):
 
-        for index, item in enumerate(
-            chat_history,
-            start=1
-        ):
+        chat_history = []
 
-            if not isinstance(item, dict):
+    question_number = 0
 
-                continue
+    # Process every chat message
+    for chat in chat_history:
 
-            question = (
-                item.get("question")
-                or item.get("user")
-                or item.get("query")
-                or ""
-            )
+        if not isinstance(chat, dict):
+            continue
 
-            answer = (
-                item.get("answer")
-                or item.get("assistant")
-                or item.get("response")
-                or ""
-            )
-
-            # ---------------------------------------------
-            # QUESTION
-            # ---------------------------------------------
-
-            if question:
-
-                question_text = format_markdown(
-                    question
-                )
-
-                story.append(
-                    Paragraph(
-                        f"<b>Question {index}:</b> "
-                        f"{question_text}",
-                        question_style
-                    )
-                )
-
-            # ---------------------------------------------
-            # ANSWER
-            # ---------------------------------------------
-
-            if answer:
-
-                answer = str(answer)
-
-                for line in answer.split("\n"):
-
-                    line = line.strip()
-
-                    if not line:
-
-                        story.append(
-                            Spacer(1, 4)
-                        )
-
-                        continue
-
-                    # Ignore markdown separators
-                    if line in (
-                        "---",
-                        "***",
-                        "___"
-                    ):
-
-                        continue
-
-                    # -------------------------------------
-                    # BULLET
-                    # -------------------------------------
-
-                    if (
-                        line.startswith("- ")
-                        or line.startswith("* ")
-                    ):
-
-                        bullet_text = line[2:].strip()
-
-                        bullet_text = format_markdown(
-                            bullet_text
-                        )
-
-                        story.append(
-                            Paragraph(
-                                f"• {bullet_text}",
-                                bullet_style
-                            )
-                        )
-
-                    # -------------------------------------
-                    # NUMBERED LIST
-                    # -------------------------------------
-
-                    elif re.match(
-                        r"^\d+\.\s+",
-                        line
-                    ):
-
-                        formatted_line = (
-                            format_markdown(line)
-                        )
-
-                        story.append(
-                            Paragraph(
-                                formatted_line,
-                                answer_style
-                            )
-                        )
-
-                    # -------------------------------------
-                    # NORMAL TEXT
-                    # -------------------------------------
-
-                    else:
-
-                        formatted_line = (
-                            format_markdown(line)
-                        )
-
-                        story.append(
-                            Paragraph(
-                                formatted_line,
-                                answer_style
-                            )
-                        )
-
-    # =====================================================
-    # SINGLE STRING CHAT HISTORY
-    # =====================================================
-
-    else:
-
-        chat_history = str(
-            chat_history
+        role = chat.get(
+            "role",
+            ""
         )
 
-        for line in chat_history.split("\n"):
+        message = chat.get(
+            "message",
+            ""
+        )
 
-            line = line.strip()
+        if not message:
+            continue
 
-            if not line:
+        message = clean_text(message)
 
-                story.append(
-                    Spacer(1, 4)
+        # ---------------------------------------------
+        # USER QUESTION
+        # ---------------------------------------------
+
+        if role == "user":
+
+            question_number += 1
+
+            story.append(
+                Paragraph(
+                    f"<b>Question {question_number}:</b>",
+                    question_style
                 )
-
-                continue
-
-            formatted_line = format_markdown(
-                line
             )
 
             story.append(
                 Paragraph(
-                    formatted_line,
+                    message,
                     answer_style
                 )
             )
 
-    # =====================================================
-    # BUILD PDF
-    # =====================================================
+        # ---------------------------------------------
+        # AI ANSWER
+        # ---------------------------------------------
 
+        elif role == "assistant":
+
+            story.append(
+                Paragraph(
+                    "<b>NEX-01 AI:</b>",
+                    question_style
+                )
+            )
+
+            story.append(
+                Paragraph(
+                    message,
+                    answer_style
+                )
+            )
+
+    # No chat available
+    if question_number == 0:
+
+        story.append(
+            Paragraph(
+                "No chat messages available.",
+                answer_style
+            )
+        )
+
+    # Build PDF
     doc.build(story)
 
     buffer.seek(0)
