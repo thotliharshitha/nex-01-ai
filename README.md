@@ -309,6 +309,6 @@ Instead of manually reading and creating study materials, students can upload th
 
 ## Author
 
-Harshitha Thotli
+Thotli Harshitha
 
 B.Tech — Computer Science and Engineering (AI & ML)
