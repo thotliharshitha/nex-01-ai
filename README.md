@@ -24,10 +24,10 @@ Generate multiple-choice questions from the uploaded PDF.
 
 Each question contains:
 
-* Question
-* Multiple options
-* Correct answer
-* Explanation
+- Question
+- Multiple options
+- Correct answer
+- Explanation
 
 The generated quiz can be downloaded as a PDF.
 
@@ -37,8 +37,8 @@ Automatically generate study flashcards from the uploaded document.
 
 Each flashcard contains:
 
-* Question
-* Answer
+- Question
+- Answer
 
 Flashcards can be downloaded as a PDF for offline study.
 
@@ -49,6 +49,36 @@ Ask questions directly from the uploaded study material.
 The application uses a Retrieval-Augmented Generation pipeline to retrieve relevant information from the document before generating an answer.
 
 The chat conversation can also be downloaded as a PDF.
+
+## Screenshots
+
+### Home Page
+
+![Home Page](assets/screenshots/home.png)
+
+### PDF Upload
+
+![PDF Upload](assets/screenshots/upload.png)
+
+### Summary Input
+
+![Summary Input](assets/screenshots/summary_input.png)
+
+### Summary Output
+
+![Summary Output](assets/screenshots/summary_output.png)
+
+### Quiz
+
+![Quiz](assets/screenshots/quiz_output.png)
+
+### Flashcards
+
+![Flashcards](assets/screenshots/flashcards_output.png)
+
+### Chat with PDF
+
+![Chat with PDF](assets/screenshots/chat.png)
 
 ## RAG Architecture
 
@@ -85,46 +115,46 @@ The system is designed to answer questions using information retrieved from the 
 
 ### Frontend
 
-* Streamlit
+- Streamlit
 
 ### Programming Language
 
-* Python
+- Python
 
 ### AI / LLM
 
-* Google Gemini API
+- Google Gemini API
 
 ### Embeddings
 
-* HuggingFace Sentence Transformers
-* `all-MiniLM-L6-v2`
+- HuggingFace Sentence Transformers
+- `all-MiniLM-L6-v2`
 
 ### Vector Database
 
-* FAISS
+- FAISS
 
 ### RAG Framework
 
-* LangChain
+- LangChain
 
 ### PDF Processing
 
-* PyPDF
+- PyPDF
 
 ### PDF Generation
 
-* ReportLab
+- ReportLab
 
 ### Environment Management
 
-* Python Virtual Environment
-* Python-dotenv
+- Python Virtual Environment
+- Python-dotenv
 
 ### Version Control
 
-* Git
-* GitHub
+- Git
+- GitHub
 
 ## Project Structure
 
@@ -135,6 +165,16 @@ AI-Study-Assistant/
 ├── README.md
 ├── requirements.txt
 ├── .gitignore
+│
+├── assets/
+│   └── screenshots/
+│       ├── chat.png
+│       ├── flashcards_output.png
+│       ├── home.png
+│       ├── quiz_output.png
+│       ├── summary_input.png
+│       ├── summary_output.png
+│       └── upload.png
 │
 ├── pages/
 │   ├── 1_Summary.py
@@ -221,10 +261,10 @@ Upload your study PDF.
 
 Choose a feature:
 
-* Summary
-* Quiz
-* Flashcards
-* Chat
+- Summary
+- Quiz
+- Flashcards
+- Chat
 
 ### Step 4
 
@@ -250,16 +290,16 @@ The `.env` file should never be committed to GitHub.
 
 Possible future enhancements include:
 
-* Support for DOCX and PPTX files
-* Multiple document support
-* User authentication
-* Study progress tracking
-* More advanced quiz modes
-* Difficulty selection for quizzes
-* Voice-based interaction
-* Improved conversation memory
-* Study analytics dashboard
-* More embedding model options
+- Support for DOCX and PPTX files
+- Multiple document support
+- User authentication
+- Study progress tracking
+- More advanced quiz modes
+- Difficulty selection for quizzes
+- Voice-based interaction
+- Improved conversation memory
+- Study analytics dashboard
+- More embedding model options
 
 ## Project Goal
 
@@ -272,9 +312,3 @@ Instead of manually reading and creating study materials, students can upload th
 Harshitha Thotli
 
 B.Tech — Computer Science and Engineering (AI & ML)
-
-## License
-
-This project is developed for educational and project purposes.
-
-
