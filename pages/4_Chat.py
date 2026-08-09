@@ -6,11 +6,33 @@ from utils.chatbot import ask_question
 from utils.pdf_generator import create_chat_pdf
 
 
+# =========================================================
+# PAGE CONFIGURATION
+# =========================================================
+
 st.set_page_config(
     page_title="NEX-01 AI Chat",
     layout="wide"
 )
 
+
+# =========================================================
+# INITIALIZE SESSION STATE
+# =========================================================
+
+if "vector_store" not in st.session_state:
+    st.session_state["vector_store"] = None
+
+if "chat_history" not in st.session_state:
+    st.session_state["chat_history"] = []
+
+if "uploaded_file_name" not in st.session_state:
+    st.session_state["uploaded_file_name"] = None
+
+
+# =========================================================
+# PAGE HEADER
+# =========================================================
 
 st.title("NEX-01 AI Chat")
 
@@ -33,49 +55,86 @@ uploaded_file = st.file_uploader(
 )
 
 
-if uploaded_file:
+# =========================================================
+# PROCESS PDF ONLY WHEN A NEW FILE IS UPLOADED
+# =========================================================
 
-    st.success(
-        "PDF uploaded successfully."
-    )
+if uploaded_file is not None:
 
-    with st.spinner("Reading document..."):
+    current_file_name = uploaded_file.name
 
-        text = extract_text(
-            uploaded_file
-        )
-
-    if not text.strip():
-
-        st.error(
-            "Could not extract text from the PDF."
-        )
-
-        st.stop()
-
-
-    with st.spinner(
-        "Preparing document for chat..."
+    if (
+        st.session_state["uploaded_file_name"]
+        != current_file_name
     ):
 
-        vector_store = create_vector_store(
-            text
+        with st.spinner(
+            "Reading document..."
+        ):
+
+            text = extract_text(
+                uploaded_file
+            )
+
+        if not text or not text.strip():
+
+            st.error(
+                "Could not extract text from the PDF."
+            )
+
+            st.stop()
+
+        with st.spinner(
+            "Preparing document for chat..."
+        ):
+
+            try:
+
+                vector_store = create_vector_store(
+                    text
+                )
+
+                st.session_state[
+                    "vector_store"
+                ] = vector_store
+
+                st.session_state[
+                    "uploaded_file_name"
+                ] = current_file_name
+
+                # Clear old chat when a new PDF is uploaded
+                st.session_state[
+                    "chat_history"
+                ] = []
+
+            except Exception as e:
+
+                st.error(
+                    "Could not prepare the document."
+                )
+
+                st.code(
+                    str(e)
+                )
+
+                st.stop()
+
+        st.success(
+            "Document ready. You can now ask questions."
         )
 
-    st.session_state[
-        "vector_store"
-    ] = vector_store
+    else:
 
-    st.success(
-        "Document ready. You can now ask questions."
-    )
+        st.success(
+            "Document ready. You can now ask questions."
+        )
 
 
 # =========================================================
 # CHECK VECTOR STORE
 # =========================================================
 
-if "vector_store" not in st.session_state:
+if st.session_state["vector_store"] is None:
 
     st.info(
         "Upload a PDF above to start chatting."
@@ -91,23 +150,10 @@ st.divider()
 # CHAT HISTORY
 # =========================================================
 
-if "chat_history" not in st.session_state:
-
-    st.session_state[
-        "chat_history"
-    ] = []
-
-
-# =========================================================
-# DISPLAY CHAT
-# =========================================================
-
 st.subheader("Chat")
 
 
-for chat in st.session_state[
-    "chat_history"
-]:
+for chat in st.session_state["chat_history"]:
 
     if chat["role"] == "user":
 
@@ -120,7 +166,6 @@ for chat in st.session_state[
             st.write(
                 chat["message"]
             )
-
 
     elif chat["role"] == "assistant":
 
@@ -146,6 +191,7 @@ question = st.chat_input(
 
 if question:
 
+    # Add user question
     st.session_state[
         "chat_history"
     ].append(
@@ -155,19 +201,36 @@ if question:
         }
     )
 
-
+    # Generate answer
     with st.spinner(
         "Thinking..."
     ):
 
-        answer = ask_question(
-            st.session_state[
-                "vector_store"
-            ],
-            question
-        )
+        try:
 
+            answer = ask_question(
+                st.session_state[
+                    "vector_store"
+                ],
+                question
+            )
 
+        except Exception as e:
+
+            answer = (
+                "Sorry, I could not generate "
+                "an answer right now."
+            )
+
+            st.error(
+                "AI service error:"
+            )
+
+            st.code(
+                str(e)
+            )
+
+    # Add AI answer
     st.session_state[
         "chat_history"
     ].append(
@@ -177,7 +240,6 @@ if question:
         }
     )
 
-
     st.rerun()
 
 
@@ -185,9 +247,7 @@ if question:
 # DOWNLOAD CHAT PDF
 # =========================================================
 
-if st.session_state[
-    "chat_history"
-]:
+if st.session_state["chat_history"]:
 
     st.divider()
 
@@ -195,17 +255,28 @@ if st.session_state[
         "Download Chat"
     )
 
-    pdf = create_chat_pdf(
-        st.session_state[
-            "chat_history"
-        ]
-    )
+    try:
 
+        pdf = create_chat_pdf(
+            st.session_state[
+                "chat_history"
+            ]
+        )
 
-    st.download_button(
-        label="Download Chat PDF",
-        data=pdf,
-        file_name="NEX-01_AI_Chat.pdf",
-        mime="application/pdf",
-        use_container_width=True
-    )
+        st.download_button(
+            label="Download Chat PDF",
+            data=pdf,
+            file_name="NEX-01_AI_Chat.pdf",
+            mime="application/pdf",
+            use_container_width=True
+        )
+
+    except Exception as e:
+
+        st.error(
+            "Could not create the chat PDF."
+        )
+
+        st.code(
+            str(e)
+        )

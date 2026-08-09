@@ -1,41 +1,50 @@
-import os
-from pathlib import Path
-
-from dotenv import load_dotenv
-from langchain_text_splitters import RecursiveCharacterTextSplitter
-from langchain_google_genai import GoogleGenerativeAIEmbeddings
+from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_community.vectorstores import FAISS
+from langchain_text_splitters import RecursiveCharacterTextSplitter
 
 
-# Load .env for local development
-env_path = Path(__file__).resolve().parent.parent / ".env"
-load_dotenv(dotenv_path=env_path)
+# =========================================================
+# HUGGING FACE EMBEDDINGS
+# =========================================================
 
-# Read API key
-api_key = os.getenv("GOOGLE_API_KEY")
-
-if not api_key:
-    raise ValueError("GOOGLE_API_KEY not found!")
-
-
-# Gemini Embeddings
-embeddings = GoogleGenerativeAIEmbeddings(
-    model="gemini-embedding-001",
-    google_api_key=api_key
+embeddings = HuggingFaceEmbeddings(
+    model_name="sentence-transformers/all-MiniLM-L6-v2"
 )
 
 
+# =========================================================
+# SPLIT TEXT
+# =========================================================
+
 def split_text(text):
+
     splitter = RecursiveCharacterTextSplitter(
         chunk_size=1000,
-        chunk_overlap=200
+        chunk_overlap=150
     )
 
-    return splitter.split_text(text)
+    chunks = splitter.split_text(text)
 
+    return chunks
+
+
+# =========================================================
+# CREATE FAISS VECTOR STORE
+# =========================================================
 
 def create_vector_store(text):
+
+    if not text or not text.strip():
+        raise ValueError(
+            "No text was found in the document."
+        )
+
     chunks = split_text(text)
+
+    if not chunks:
+        raise ValueError(
+            "Could not create text chunks from the document."
+        )
 
     vector_store = FAISS.from_texts(
         texts=chunks,
