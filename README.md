@@ -4,6 +4,11 @@ NEX-01 AI Study Assistant is an AI-powered learning application that helps stude
 
 Users can upload a study PDF and use AI-powered features such as document summarization, quiz generation, flashcard generation, and question answering through a Retrieval-Augmented Generation (RAG) based chat system.
 
+## Live Demo
+
+[Launch NEX-01 AI Study Assistant](https://nex-01-ai-mwu8zyaygof6k9ttihqshp.streamlit.app/)
+
+
 ## Features
 
 ### 1. PDF Upload
