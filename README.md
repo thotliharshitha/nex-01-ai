@@ -116,6 +116,7 @@ Context-Aware Answer
 
 The system is designed to answer questions using information retrieved from the uploaded document.
 
+
 ## RAG Architecture
 
 ![NEX-01 AI Study Assistant Architecture](assets/screenshots/architecture.png)
