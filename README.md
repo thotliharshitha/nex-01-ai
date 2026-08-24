@@ -8,7 +8,6 @@ Users can upload a study PDF and use AI-powered features such as document summar
 
 [Launch NEX-01 AI Study Assistant](https://nex-01-ai-mwu8zyaygof6k9ttihqshp.streamlit.app/)
 
-
 ## Features
 
 ### 1. PDF Upload
@@ -87,6 +86,8 @@ The chat conversation can also be downloaded as a PDF.
 
 ## RAG Architecture
 
+![NEX-01 AI Study Assistant Architecture](./assets/screenshots/architecture.png)
+
 The Chat feature uses the following pipeline:
 
 ```text
@@ -115,9 +116,6 @@ Context-Aware Answer
 ```
 
 The system is designed to answer questions using information retrieved from the uploaded document.
-
-
-
 
 ## Technologies Used
 
@@ -317,6 +315,6 @@ Instead of manually reading and creating study materials, students can upload th
 
 ## Author
 
-Thotli Harshitha
+Harshitha Thotli
 
 B.Tech — Computer Science and Engineering (AI & ML)
