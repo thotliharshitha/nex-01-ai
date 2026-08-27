@@ -29,7 +29,7 @@ if not api_key:
 # =========================================================
 
 llm = ChatGoogleGenerativeAI(
-    model="gemini-flash-latest",
+    model="gemini-3.5-flash-lite",
     google_api_key=api_key,
     temperature=0.3,
 )
@@ -82,9 +82,9 @@ PDF CONTENT:
 
         content = response.content
 
-        # -------------------------------------------------
+        # =================================================
         # Gemini/LangChain may return a list
-        # -------------------------------------------------
+        # =================================================
 
         if isinstance(content, list):
 
@@ -109,9 +109,9 @@ PDF CONTENT:
         # Make sure content is a string
         content = str(content).strip()
 
-        # -------------------------------------------------
+        # =================================================
         # Remove markdown code fences
-        # -------------------------------------------------
+        # =================================================
 
         if content.startswith("```json"):
 
@@ -127,15 +127,15 @@ PDF CONTENT:
 
         content = content.strip()
 
-        # -------------------------------------------------
+        # =================================================
         # Convert JSON to Python
-        # -------------------------------------------------
+        # =================================================
 
         flashcards = json.loads(content)
 
-        # -------------------------------------------------
+        # =================================================
         # Validate response
-        # -------------------------------------------------
+        # =================================================
 
         if not isinstance(flashcards, list):
 
@@ -172,6 +172,7 @@ PDF CONTENT:
                 }
             )
 
+        # Return maximum 10 flashcards
         return valid_flashcards[:10]
 
     except Exception as e:

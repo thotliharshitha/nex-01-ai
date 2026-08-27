@@ -6,17 +6,17 @@ from dotenv import load_dotenv
 from langchain_google_genai import ChatGoogleGenerativeAI
 
 
-# ---------------------------------------------------------
+# =========================================================
 # Load .env
-# ---------------------------------------------------------
+# =========================================================
 
 env_path = Path(__file__).resolve().parent.parent / ".env"
 load_dotenv(dotenv_path=env_path)
 
 
-# ---------------------------------------------------------
+# =========================================================
 # Get API key
-# ---------------------------------------------------------
+# =========================================================
 
 api_key = os.getenv("GOOGLE_API_KEY")
 
@@ -26,20 +26,20 @@ if not api_key:
     )
 
 
-# ---------------------------------------------------------
+# =========================================================
 # Gemini model
-# ---------------------------------------------------------
+# =========================================================
 
 llm = ChatGoogleGenerativeAI(
-    model="gemini-flash-latest",
+    model="gemini-3.5-flash-lite",
     google_api_key=api_key,
     temperature=0.3,
 )
 
 
-# ---------------------------------------------------------
+# =========================================================
 # Generate Quiz
-# ---------------------------------------------------------
+# =========================================================
 
 def generate_quiz(text):
 
@@ -93,9 +93,9 @@ PDF CONTENT:
 
         content = response.content
 
-        # -------------------------------------------------
+        # =================================================
         # LangChain/Gemini may return a list
-        # -------------------------------------------------
+        # =================================================
 
         if isinstance(content, list):
 
@@ -117,12 +117,12 @@ PDF CONTENT:
 
             content = "\n".join(parts)
 
-        # Make sure content is string
+        # Make sure content is a string
         content = str(content).strip()
 
-        # -------------------------------------------------
+        # =================================================
         # Remove markdown code fences
-        # -------------------------------------------------
+        # =================================================
 
         if content.startswith("```json"):
 
@@ -138,15 +138,15 @@ PDF CONTENT:
 
         content = content.strip()
 
-        # -------------------------------------------------
+        # =================================================
         # Convert JSON text to Python list
-        # -------------------------------------------------
+        # =================================================
 
         quiz = json.loads(content)
 
-        # -------------------------------------------------
+        # =================================================
         # Validate quiz
-        # -------------------------------------------------
+        # =================================================
 
         if not isinstance(quiz, list):
 
@@ -180,8 +180,28 @@ PDF CONTENT:
             if len(question["options"]) != 4:
                 continue
 
-            valid_questions.append(question)
+            valid_questions.append(
+                {
+                    "question": str(
+                        question["question"]
+                    ).strip(),
 
+                    "options": [
+                        str(option).strip()
+                        for option in question["options"]
+                    ],
+
+                    "answer": str(
+                        question["answer"]
+                    ).strip(),
+
+                    "explanation": str(
+                        question["explanation"]
+                    ).strip()
+                }
+            )
+
+        # Return maximum 10 questions
         return valid_questions[:10]
 
     except Exception as e:
