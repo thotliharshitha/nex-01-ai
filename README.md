@@ -8,6 +8,11 @@ Users can upload a study PDF and use AI-powered features such as document summar
 
 [Launch NEX-01 AI Study Assistant](https://nex-01-ai-mwu8zyaygof6k9ttihqshp.streamlit.app/)
 
+## Problem Statement
+
+Students often find it difficult and time-consuming to study lengthy PDF materials and create summaries, quizzes, and flashcards manually. NEX-01 AI Study Assistant solves this problem by transforming study PDFs into interactive learning resources using AI and Retrieval-Augmented Generation (RAG).
+
+
 ## Features
 
 ### 1. PDF Upload
@@ -165,7 +170,7 @@ The system is designed to answer questions using information retrieved from the 
 ## Project Structure
 
 ```text
-AI-Study-Assistant/
+nex-01-ai/
 │
 ├── Home.py
 ├── README.md
@@ -174,13 +179,14 @@ AI-Study-Assistant/
 │
 ├── assets/
 │   └── screenshots/
+│       ├── architecture.png
 │       ├── chat.png
 │       ├── flashcards_output.png
 │       ├── home.png
 │       ├── quiz_output.png
 │       ├── summary_input.png
 │       ├── summary_output.png
-│       └── upload.png
+│      └── upload.png
 │
 ├── pages/
 │   ├── 1_Summary.py
